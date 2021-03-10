@@ -6,7 +6,8 @@ push!(LOAD_PATH, ".")
 
 include("carpInstance.jl") 
 include("floyd_algorithm.jl")
-
+include("constructive.jl")
+include("pre_processed_data.jl")
 
 println(ARGS)
 if length(ARGS) < 2
@@ -25,8 +26,32 @@ instance = cvrpInstance(instance_file) #instance receives the data read by the I
 
 
 ####### FLOYD WARSHALL ALGORITHM #######
+
 #Depot =1
 floyd_warshall_matrix=floyd_warshall(instance.N_NODES, instance.EDGES, instance.COST)
 println(floyd_warshall_matrix.dists) #Return Matrix floyd_warhsall
 
+########################################
+cost_open_route=10000
+rng = MersenneTwister(seed) #random number generator initializer
+startt = time() #starts the timer
+
+moves_ILS=[]
+if moves==0 || moves==2
+    append!(moves_ILS,[1,2])
+end
+if moves==1 || moves==2
+    append!(moves_ILS,[3,4])
+end
+
+############# CONSTRUCTIVE #############
+
+ROUTES, D_ROUTES = constructive(floyd_warshall_matrix.dists, instance,cost_open_route)
+ROUTES_opt, D_ROUTES_opt=deepcopy(ROUTES),deepcopy(D_ROUTES)
+#println(ROUTES)
+#println(D_ROUTES)
+sigma_data=preprocessing_total_data(ROUTES,floyd_warshall_matrix.dists,instance)
+
+#println(ROUTES[1])
+#println(sigma_data[1])
 ########################################
