@@ -1,3 +1,4 @@
+#update all routes
 function preprocessing_total_data(ROUTES,floyd_warshall_matrix,instance)
     sigma_data=[]
     for pos_route in 1:length(ROUTES)
@@ -5,6 +6,11 @@ function preprocessing_total_data(ROUTES,floyd_warshall_matrix,instance)
         append!(sigma_data,[dict_ROUTE])
     end
     return sigma_data
+end
+#update one route
+function preprocessing_data(ROUTES,pos_route,floyd_warshall_matrix,instance)
+    dict_ROUTE=update(ROUTES,pos_route,floyd_warshall_matrix,instance)
+    return dict_ROUTE
 end
 
 function update(ROUTES,pos_route,floyd_warshall_matrix,instance)
@@ -73,10 +79,10 @@ function concat_FORW(dict_ROUTE,route,pos1, pos2,floyd_warshall_matrix,instance)
             Link_2_1=floyd_warshall_matrix[finish_nodes[1],start_nodes[1]]
             Link_1_2=floyd_warshall_matrix[finish_nodes[2],start_nodes[2]]
             Link_2_2=floyd_warshall_matrix[finish_nodes[1],start_nodes[2]]
-            Mode_1_1=Mode_finish[1]+Link_1_1
-            Mode_2_1=Mode_finish[2]+Link_2_1
-            Mode_1_2=Mode_finish[3]+Link_1_2
-            Mode_2_2=Mode_finish[4]+Link_2_2
+            Mode_1_1=Mode_finish[1]+Link_1_1+Mode_start[1]
+            Mode_2_1=Mode_finish[2]+Link_2_1+Mode_start[2]
+            Mode_1_2=Mode_finish[3]+Link_1_2+Mode_start[3]
+            Mode_2_2=Mode_finish[4]+Link_2_2+Mode_start[4]
             return [Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2, min(Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2)]
 
         else #concact to service
@@ -93,4 +99,51 @@ function concat_FORW(dict_ROUTE,route,pos1, pos2,floyd_warshall_matrix,instance)
         return [Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2, min(Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2)]
 
     end
+end
+
+function concat_links_know(Modes,sigma_data,list_pos_route,pos,sigma_1,sigma_2,links,end_service)
+    
+    dict=sigma_data[list_pos_route[pos]]
+    if isempty(Modes)
+        ini=dict[sigma_1]
+    else
+        ini=Modes
+    end
+    final=dict[sigma_2]
+    if sigma_1[1]==sigma_1[2]
+        if sigma_2[1]==sigma_2[2] #concat service to service
+            Mode_1_1=ini[1]+links[1]+final[1]
+            Mode_2_1=ini[4]+links[2]+final[1]
+            Mode_1_2=ini[1]+links[3]+final[4]
+            Mode_2_2=ini[4]+links[4]+final[4]
+            Modes=deepcopy([Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2])        
+        else #concat service to subsequence
+            Mode_1_1=min(ini[1]+links[1]+final[1],ini[1]+links[3]+final[2])
+            Mode_2_1=min(ini[4]+links[2]+final[1],ini[3]+links[4]+final[2])
+            Mode_1_2=min(ini[1]+links[1]+final[3],ini[1]+links[3]+final[4])
+            Mode_2_2=min(ini[4]+links[2]+final[3],ini[4]+links[4]+final[4])
+            Modes=deepcopy([Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2])
+        end
+    else
+        if sigma_2[1]==0
+            Mode_1_1=ini[1]+links[1]
+            Mode_2_1=ini[2]+links[2]
+            Mode_1_2=ini[3]+links[3]
+            Mode_2_2=ini[4]+links[4]
+            Modes=deepcopy([Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2])
+        elseif sigma_2[1]==sigma_2[2] || sigma_2[1]==end_service#concat subsequence to service
+            Mode_1_1=min(ini[1]+links[1]+final[1],ini[3]+links[2]+final[1])
+            Mode_2_1=min(ini[2]+links[1]+final[1],ini[4]+links[2]+final[1])
+            Mode_1_2=min(ini[1]+links[3]+final[4],ini[3]+links[4]+final[4])
+            Mode_2_2=min(ini[2]+links[3]+final[4],ini[4]+links[4]+final[4])
+            Modes=deepcopy([Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2])
+        else #concat subsequence to subsequence
+            Mode_1_1=min(ini[1]+links[1]+final[1],ini[3]+links[2]+final[1],ini[1]+links[3]+final[2],ini[3]+links[4]+final[2])
+            Mode_2_1=min(ini[2]+links[1]+final[1],ini[4]+links[2]+final[1],ini[2]+links[3]+final[2],ini[4]+links[4]+final[2])
+            Mode_1_2=min(ini[1]+links[1]+final[3],ini[3]+links[2]+final[3],ini[1]+links[3]+final[4],ini[3]+links[4]+final[4])
+            Mode_2_2=min(ini[2]+links[1]+final[3],ini[4]+links[2]+final[3],ini[2]+links[3]+final[4],ini[4]+links[4]+final[4])
+            Modes=deepcopy([Mode_1_1,Mode_2_1,Mode_1_2,Mode_2_2])
+        end
+    end
+    return Modes
 end
