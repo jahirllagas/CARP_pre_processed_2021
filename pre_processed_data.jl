@@ -101,15 +101,14 @@ function concat_FORW(dict_ROUTE,route,pos1, pos2,floyd_warshall_matrix,instance)
     end
 end
 
-function concat_links_know(Modes,sigma_data,list_pos_route,pos,sigma_1,sigma_2,links,end_service)
+function concat_links_know(Modes,sigma_data,list_pos_route,sigma_1,sigma_2,links,end_service,origin)
     
-    dict=sigma_data[list_pos_route[pos]]
     if isempty(Modes)
-        ini=dict[sigma_1]
+        ini=sigma_data[list_pos_route[origin[1]]][sigma_1]
     else
         ini=Modes
     end
-    final=dict[sigma_2]
+    final=sigma_data[list_pos_route[origin[2]]][sigma_2]
     if sigma_1[1]==sigma_1[2]
         if sigma_2[1]==sigma_2[2] #concat service to service
             Mode_1_1=ini[1]+links[1]+final[1]

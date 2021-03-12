@@ -59,6 +59,7 @@ sigma_data=preprocessing_total_data(ROUTES,floyd_warshall_matrix.dists,instance)
 ########################################
 
 ############# LOCAL SEARCH #############
+println(instance.CAPACITY)
 for a in 1:1
     accept_move=true
     while accept_move==true
@@ -74,18 +75,32 @@ for a in 1:1
 
                 for i in order_moves
                     if i==1
-                        accept_move, ROUTES_av = swap_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
+                        accept_move, ROUTES_av,list_route_pos = swap_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
                     elseif i==2
-                        accept_move, ROUTES_av = relocate_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
+                        accept_move, ROUTES_av,list_route_pos = relocate_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
+                    elseif i==3
+                        accept_move, ROUTES_av,new_demand,list_route_pos = swap_inter(sigma_data,route_pos,ROUTES_av,D_ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
                     end
 
                     #Got better?
                     if accept_move==true
-                        @show ROUTES[route_pos]
+                        for i in list_route_pos
+                            @show ROUTES[i]
+                        end
                         global ROUTES = deepcopy(ROUTES_av)
-                        @show ROUTES[route_pos] #Verify change of route
-                        global sigma_data[route_pos]=deepcopy(preprocessing_data(ROUTES,route_pos,floyd_warshall_matrix.dists,instance))
-                        println("Total_cost_update_data= ",sigma_data[route_pos][[-1,0]]) #Check the change in cost
+                        for i in list_route_pos
+                            @show ROUTES[i] #Verify change of route
+                        end
+                        if length(list_route_pos) >1
+                            for i in 1:length(list_route_pos)
+                                global sigma_data[list_route_pos[i]]=deepcopy(preprocessing_data(ROUTES,list_route_pos[i],floyd_warshall_matrix.dists,instance))
+                                global D_ROUTES[list_route_pos[i]]=new_demand[i]
+                                println("Total_cost_update_data= ",sigma_data[list_route_pos[i]][[-1,0]]) #Check the change in cost 
+                            end
+                        else
+                            global sigma_data[list_route_pos[1]]=deepcopy(preprocessing_data(ROUTES,list_route_pos[1],floyd_warshall_matrix.dists,instance))     
+                        end
+                        @show D_ROUTES                 
                         println("***********")
                         @goto escape_label            
                     end
