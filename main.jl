@@ -75,6 +75,8 @@ for a in 1:1
                 for i in order_moves
                     if i==1
                         accept_move, ROUTES_av = swap_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
+                    elseif i==2
+                        accept_move, ROUTES_av = relocate_intra(sigma_data,route_pos,ROUTES_av,floyd_warshall_matrix.dists,pos1,instance)
                     end
 
                     #Got better?
