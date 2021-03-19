@@ -8,7 +8,7 @@ struct cvrpInstance #<: AbstractInstance
     COST ::Array
     EDGES ::Array 
     DEMAND ::Array
-    
+    DEPOT ::Int64
     
 
     function cvrpInstance(filename::String)
@@ -41,7 +41,8 @@ struct cvrpInstance #<: AbstractInstance
             
         end
         if ARISTAS_NREQ==0
-            new(N_NODES, ARISTAS_REQ, ARISTAS_NREQ, VEHICLE, CAPACITY, COSTE_TOTAL_REQ, COST, EDGES,DEMAND)
+            DEPOT= parse(Int64, split(values[11+ARISTAS_REQ],":")[2])
+            new(N_NODES, ARISTAS_REQ, ARISTAS_NREQ, VEHICLE, CAPACITY, COSTE_TOTAL_REQ, COST, EDGES,DEMAND,DEPOT)
         else
             for i in (ARISTAS_REQ+2):(ARISTAS_REQ+2+ARISTAS_NREQ-1)
                 line_clear=replace(values[10+i]," " => "")
@@ -57,7 +58,8 @@ struct cvrpInstance #<: AbstractInstance
                 
             end
             #println(EDGES)
-            new(N_NODES, ARISTAS_REQ, ARISTAS_NREQ, VEHICLE, CAPACITY, COSTE_TOTAL_REQ, COST, EDGES,DEMAND)
+            DEPOT= parse(Int64, split(values[10+ARISTAS_REQ+ARISTAS_NREQ+2],":")[2])
+            new(N_NODES, ARISTAS_REQ, ARISTAS_NREQ, VEHICLE, CAPACITY, COSTE_TOTAL_REQ, COST, EDGES,DEMAND,DEPOT)
         end
     end
 end

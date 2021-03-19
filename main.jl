@@ -25,7 +25,7 @@ moves = parse(Int64, ARGS[2])
 # 2: 0 + 1
 seed = parse(Int64,ARGS[3])
 instance = cvrpInstance(instance_file) #instance receives the data read by the Instance constructor
-
+@show instance.DEPOT
 
 ####### FLOYD WARSHALL ALGORITHM #######
 
@@ -84,13 +84,7 @@ for a in 1:1
 
                     #Got better?
                     if accept_move==true
-                        for i in list_route_pos
-                            @show ROUTES[i]
-                        end
                         global ROUTES = deepcopy(ROUTES_av)
-                        for i in list_route_pos
-                            @show ROUTES[i] #Verify change of route
-                        end
                         if length(list_route_pos) >1
                             for i in 1:length(list_route_pos)
                                 global sigma_data[list_route_pos[i]]=deepcopy(preprocessing_data(ROUTES,list_route_pos[i],floyd_warshall_matrix.dists,instance))
@@ -99,6 +93,7 @@ for a in 1:1
                             end
                         else
                             global sigma_data[list_route_pos[1]]=deepcopy(preprocessing_data(ROUTES,list_route_pos[1],floyd_warshall_matrix.dists,instance))     
+                            println("Total_cost_update_data= ",sigma_data[list_route_pos[1]][[-1,0]]) #Check the change in cost 
                         end
                         @show D_ROUTES                 
                         println("***********")
@@ -109,8 +104,12 @@ for a in 1:1
         end
         @label escape_label
     end
+    TOTAL_COST=0
     for i in 1:length(ROUTES)
-        println("Cost Route $i = ",sigma_data[i][[-1,0]])
+        cost_modes=sigma_data[i][[-1,0]]
+        TOTAL_COST=TOTAL_COST+cost_modes[5]
+        println("Cost Route $i = ",cost_modes)
     end
+    println("Total Cost = ",TOTAL_COST)
 end
 ########################################

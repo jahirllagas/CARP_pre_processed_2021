@@ -41,6 +41,7 @@ function create_dict_route(route)
 end
 
 function concat_FORW(dict_ROUTE,route,pos1, pos2,floyd_warshall_matrix,instance) #concatenation one by one
+    depot=instance.DEPOT
     if (pos1==pos2)
         if pos1==1 || pos1==length(route)
             return [0,0,0,0,0]
@@ -52,12 +53,12 @@ function concat_FORW(dict_ROUTE,route,pos1, pos2,floyd_warshall_matrix,instance)
         finish=route[pos2-1]
         start=route[pos2]
         if finish==-1 #Depot
-            finish_nodes=[1,1]
+            finish_nodes=[depot,depot]
         else
             finish_nodes=instance.EDGES[finish]
         end
         if start==0 #Depot
-            start_nodes=[1,1]
+            start_nodes=[depot,depot]
         else 
             start_nodes=instance.EDGES[start]
         end

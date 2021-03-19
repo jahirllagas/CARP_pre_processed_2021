@@ -90,19 +90,19 @@ function lower_bound(sigma_data,ROUTES,list_route_pos,floyd_warshall_matrix, pos
 end
 
 function get_links(sigma_data,Part1,Part2,floyd_warshall_matrix,instance)
-
+    depot=instance.DEPOT
     if Part1[2]==-1
         edge_ini=instance.EDGES[Part2[1]]
 
-        Link_D_1=floyd_warshall_matrix[1,edge_ini[1]]
-        Link_D_2=floyd_warshall_matrix[1,edge_ini[2]]
+        Link_D_1=floyd_warshall_matrix[depot,edge_ini[1]]
+        Link_D_2=floyd_warshall_matrix[depot,edge_ini[2]]
         return [Link_D_1,Link_D_1,Link_D_2,Link_D_2],min(Link_D_1,Link_D_1,Link_D_2,Link_D_2)
     
     elseif Part2[1]==0
         edge_end=instance.EDGES[Part1[2]]
 
-        Link_1_D=floyd_warshall_matrix[edge_end[2],1]
-        Link_2_D=floyd_warshall_matrix[edge_end[1],1]
+        Link_1_D=floyd_warshall_matrix[edge_end[2],depot]
+        Link_2_D=floyd_warshall_matrix[edge_end[1],depot]
         return [Link_1_D,Link_1_D,Link_2_D,Link_2_D],min(Link_1_D,Link_1_D,Link_2_D,Link_2_D)
     
     else
@@ -200,12 +200,12 @@ function after(sigma_data,ROUTES,list_pos_route,floyd_warshall_matrix, pos1,pos2
                 Modes=[]
                 end_service=-2 #Impossible
                 if route==1
-                    if pos1+1==length(route)-1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
-                        end_service=route[pos2+1]
+                    if pos1+1==length(route_1)-1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
+                        end_service=route_1[pos1+1]
                     end
                 else
-                    if pos2+1==length(route)-1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
-                        end_service=route[pos2+1]
+                    if pos2+1==length(route_2)-1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
+                        end_service=route_2[pos2+1]
                     end
                 end
                 ini=Part_routes[route][1]
