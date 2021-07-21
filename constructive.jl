@@ -1,38 +1,38 @@
-using Random
-using Statistics
+function constructive(Floyd_Warshall, data, depot)
 
-
-function constructive(floyd_warshall_matrix, instance,cost_open_route)
-    clients_order=shuffle(rng,1:instance.ARISTAS_REQ)
+    clients_order = shuffle(rng, data.requireds)
     #Empty route list
-    ROUTES=[]
+    ROUTES = []
     #Save demand
-    D_ROUTES=[]
+    D_ROUTES = []
     for c in clients_order
         if  isempty(ROUTES)
-            append!(ROUTES,[[-1,c]])
-            append!(D_ROUTES, instance.DEMAND[c])
+            append!(ROUTES, [[depot, c]])
+            append!(D_ROUTES, c.demand)
         else
-            pos=0
-            demand=0
+            pos = 0
+            demand = 0
             for route_pos in 1:length(ROUTES)
-                demand_eval=D_ROUTES[route_pos] + instance.DEMAND[c] #Current demand + new client
-                if (demand_eval <= instance.CAPACITY) #Limited capacity
-                    demand=demand_eval
-                    pos= route_pos
+                demand_eval = D_ROUTES[route_pos] + c.demand #Current demand + new client
+                if (demand_eval <= data.capacity) #Limited capacity
+                    demand = demand_eval
+                    pos = route_pos
                 end
             end
-            if pos==0
-                append!(ROUTES,[[-1,c]])
-                append!(D_ROUTES, instance.DEMAND[c])
+            if pos == 0
+                append!(ROUTES, [[depot, c]])
+                append!(D_ROUTES, c.demand)
             else                
-                append!(ROUTES[pos],c)
-                D_ROUTES[pos]=demand
+                append!(ROUTES[pos], [c])
+                D_ROUTES[pos] = demand
             end
         end
     end
+
     for route_pos in 1:length(ROUTES)
-        append!(ROUTES[route_pos],0)
+        append!(ROUTES[route_pos], [depot])
     end
-    return ROUTES, D_ROUTES
+
+    start_solution = new_solution(ROUTES, D_ROUTES)
+    return start_solution
 end
