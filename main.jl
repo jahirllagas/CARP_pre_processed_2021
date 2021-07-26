@@ -12,7 +12,7 @@ include("pre_processed_data.jl")
 include("local_search.jl")
 include("lower_bound.jl")
 
-ARGS = [:gdb1, 2, 123456789]
+ARGS = [:gdb10, 2, 123456789]
 
 #---------------------DATA AND INFORMATION---------------------#
 
@@ -26,6 +26,7 @@ depot = data.vertices[1]
 display(data)
 
 n_vertex= length(data.vertices)
+startt = time() #Start time
 
 #------------------FLOYD WARSHALL ALGORITHM--------------------#
 
@@ -50,21 +51,30 @@ end
 #----------------------CONSTRUCTIVE----------------------------#
 
 start_solution = constructive(Floyd_Warshall, data, depot) #Struct mutable
-opt_solution = deepcopy(start_solution) #Struct mutable
 
-#----------------VIDAL PRE PROCESSED METHOD--------------------#
+#----------------VIDALT PRE PROCESSED METHOD--------------------#
 
-σ_data = preprocessing_total_data(opt_solution, Floyd_Warshall) #Dict
+σ_data_opt = preprocessing_total_data(start_solution, Floyd_Warshall) #Dict
 # σ_data : [edge1, edge2] => [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, Lower Bound]
 
-#------------------------LOCAL SEARCH--------------------------#
-for a in 1:1
-    accept_move = true
-    while accept_move == true
-        
+#-------------------------INITIAL COST--------------------------#
 
+start_solution.total_cost = Total_Cost(start_solution, σ_data_opt)
+println("Total Cost = ", start_solution.total_cost)
+
+opt_solution = deepcopy(start_solution) #Struct mutable
+solution = deepcopy(start_solution) #Struct mutable
+
+#------------------------LOCAL SEARCH--------------------------#
+
+for a in 1:1 #(time() - startt) <600
+    accept_move = true
+    σ_data = deepcopy(σ_data_opt)
+
+    while accept_move == true 
+        
         accept_move = false
-        solution_av = deepcopy(opt_solution)
+        solution_av = deepcopy(solution)
         route_order = shuffle(rng, 1:solution_av.n_routes)
 
         for route_pos in route_order
@@ -90,13 +100,13 @@ for a in 1:1
                     end
                     #Got better?
                     if accept_move == true
-                        global opt_solution = deepcopy(solution_av)
+                        global solution = deepcopy(solution_av)
                         for route_pos in list_route_pos
-                            global σ_data[route_pos] = deepcopy(preprocessing_data(opt_solution, route_pos, Floyd_Warshall))  
-                            println("Total_cost_update_data = ", σ_data[route_pos][[-1, 0]]) #Check the change in cost      
+                            global σ_data[route_pos] = deepcopy(preprocessing_data(solution_av, route_pos, Floyd_Warshall))  
+                            #println("Total_cost_update_data = ", σ_data[route_pos][[-1, 0]]) #Check the change in cost      
                         end
-                        opt_solution, σ_data = empty_route(opt_solution, σ_data)
-                        println("***********")
+                        solution, σ_data = empty_route(solution, σ_data)
+                        #println("***********")
                         @goto escape_label 
                     end
                 end
@@ -104,15 +114,21 @@ for a in 1:1
         end
         @label escape_label
     end
-   
-    TOTAL_COST=0
-    for i in 1:opt_solution.n_routes
-        cost_modes = σ_data[i][[-1,0]]
-        TOTAL_COST = TOTAL_COST + cost_modes[5]
-        println("Cost Route $i = ",cost_modes)
+
+    solution.total_cost = Total_Cost(solution, σ_data)
+
+    if solution.total_cost < opt_solution.total_cost - 0.000001
+        opt_solution = deepcopy(solution)
+        σ_data_opt = deepcopy(σ_data)
     end
-    println("Total Cost = ",TOTAL_COST)
+
+    println("Total Cost = ", Total_Cost(opt_solution, σ_data_opt))
+
 end
 
-opt_solution.routes
-########################################
+totaltime = time() - startt
+println("Time: ",  round(totaltime, digits = 3))
+
+solution.routes
+
+#------------------------------------------------------------------#

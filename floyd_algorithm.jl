@@ -5,3 +5,12 @@ function floyd_warshall(n_vertex, edges)
     end
     return floyd_warshall_shortest_paths(g)
 end
+
+function Total_Cost(solution ,σ_data)
+    TOTAL_COST = 0
+    for i in 1:solution.n_routes
+        cost_modes = σ_data[i][[-1, 0]]
+        TOTAL_COST = TOTAL_COST + cost_modes[5]
+    end
+    return TOTAL_COST
+end 

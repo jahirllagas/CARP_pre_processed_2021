@@ -1,10 +1,10 @@
 #update all routes
-function preprocessing_total_data(opt_solution, Floyd_Warshall)
+function preprocessing_total_data(solution, Floyd_Warshall)
     σ_data = []
 
-    for pos_route in 1:opt_solution.n_routes
+    for pos_route in 1:solution.n_routes
         dict_ROUTE = Dict()
-        dict_ROUTE = deepcopy(update(opt_solution.routes, pos_route, Floyd_Warshall))
+        dict_ROUTE = deepcopy(update(solution.routes, pos_route, Floyd_Warshall))
         append!(σ_data, [dict_ROUTE])
 
     end
@@ -12,8 +12,8 @@ function preprocessing_total_data(opt_solution, Floyd_Warshall)
 end
 
 #update one route
-function preprocessing_data(opt_solution, pos_route, Floyd_Warshall)
-    dict_ROUTE = update(opt_solution.routes, pos_route, Floyd_Warshall)
+function preprocessing_data(solution, pos_route, Floyd_Warshall)
+    dict_ROUTE = update(solution.routes, pos_route, Floyd_Warshall)
     return dict_ROUTE
 end
 
@@ -50,9 +50,7 @@ end
 
 function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenation one by one
     depot = route.edges[1]
-
     if (pos1 == pos2)
-
         if pos1 == 1 || pos1 == length(route.edges)
             return [0, 0, 0, 0, 0]
         end
@@ -66,7 +64,6 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
         finish_0 = route.edges[pos1]
         finish_1 = route.edges[pos2 - 1]
         start = route.edges[pos2]
-
         if finish_0 == depot #Depot 
             if finish_1 == depot #Depot
                 finish_nodes = [1, 1]
@@ -123,7 +120,6 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
                 return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
             end
         else
-
             #subsequence to service
             Link_1_1 = Floyd_Warshall[finish_nodes[2], start_nodes[1]]
             Link_2_1 = Floyd_Warshall[finish_nodes[1], start_nodes[1]]

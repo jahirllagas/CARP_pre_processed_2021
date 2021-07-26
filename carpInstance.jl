@@ -3,12 +3,12 @@ mutable struct Route
     edges   ::Vector{}
     demand  ::Int64
     n_edges ::Int64
-    #add length edges
 end
 
 mutable struct Solution
     n_routes    ::Int64
     routes      ::Vector{Route}
+    total_cost ::Float64
 end
 
 
@@ -20,6 +20,6 @@ function new_solution(routes, d_routes)
         append!(list, [route])
     end
 
-    solution = Solution(length(routes), list)
+    solution = Solution(length(routes), list, 0)
     return solution
 end
