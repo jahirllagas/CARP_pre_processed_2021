@@ -11,7 +11,7 @@ include("local_search.jl")
 include("lower_bound.jl")
 include("perturbation.jl")
 
-ARGS = [:D16, 2, 123456789]
+ARGS = [:kshs6, 1, 123456789]
 
 #---------------------DATA AND INFORMATION---------------------#
 
@@ -47,6 +47,8 @@ if moves == 1 || moves==2
     append!(moves_ILS, [3, 4])
 end
 
+a = 0
+
 #----------------------CONSTRUCTIVE----------------------------#
 
 start_solution = constructive(Floyd_Warshall, data, depot) #Struct mutable
@@ -76,14 +78,14 @@ reduc = 0.0001
 
 #------------------------LOCAL SEARCH---------------------------#
 
-while (time() - startt) < 600
+while a < 100 #(time() - startt) < 60
+    global a = a + 1
     accept_move = true
-    σ_data_av = deepcopy(σ_data)
-
+    
     while accept_move == true 
-        
         accept_move = false
         solution_av = deepcopy(solution)
+        σ_data_av = deepcopy(σ_data)
         route_order = shuffle(rng, 1:solution_av.n_routes)
 
         for route_pos in route_order
@@ -110,23 +112,25 @@ while (time() - startt) < 600
                     if accept_move == true
                         global solution = deepcopy(solution_av)
                         for route_pos in list_route_pos
-                            σ_data_av[route_pos] = deepcopy(preprocessing_data(solution_av, route_pos, Floyd_Warshall))  
-                            #println("Total_cost_update_data = ", σ_data[route_pos][[-1, 0]]) #Check the change in cost      
+                            σ_data_av[route_pos] = deepcopy(preprocessing_data(solution_av, route_pos, Floyd_Warshall))
+                            #println("Total_cost_update_data = ", σ_data_av[route_pos][[-1, 0]]) #Check the change in cost      
                         end
-                        solution, σ_data = empty_route(solution, σ_data_av)
+                        global σ_data = deepcopy(σ_data_av)
+                        global solution, σ_data = empty_route(solution, σ_data)
                         #println("***********")
-                        @goto escape_label 
+                        @goto escape_label
                     end
                 end
             end
         end
         @label escape_label
+ 
     end
 
     solution.total_cost = Total_Cost(solution, σ_data)
-    println("Total Cost = ", solution.total_cost)
+    println(a, ". Total Cost = ", solution.total_cost)
 
-    if solution.total_cost < opt_solution.total_cost - 0.000001
+    if solution.total_cost < opt_solution.total_cost - 0.000001 || solution.n_routes < opt_solution.n_routes #Less vehicles
         global opt_solution = deepcopy(solution)
         global σ_data_opt = deepcopy(σ_data)
         global Max = copy(MAX_VALUE)
@@ -140,6 +144,7 @@ while (time() - startt) < 600
     solution_av = deepcopy(solution)
     σ_data_av = deepcopy(σ_data)
 
+    
     while M < 4 
         M = M + 1
         add = add + 1 #Caso nao consiga valores dentro do rango
@@ -178,7 +183,7 @@ while (time() - startt) < 600
                 global Min = Min - reduc
             end
         end
-        if add > 500
+        if add > 200
             add = 0
             global Max = Max + 0.05
         end  
@@ -187,7 +192,7 @@ end
 
 totaltime = time() - startt
 println("Time: ",  round(totaltime, digits = 3))
-
+println("Optimal Route Cost = ", opt_solution.total_cost)
 opt_solution.routes
 
-#------------------------------------------------------------------# 
+#------------------------------------------------------------------#

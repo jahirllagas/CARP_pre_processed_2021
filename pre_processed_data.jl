@@ -119,6 +119,19 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
                 Mode_2_2 = Mode_finish[4] + Link_2_2 + Mode_start[4]
                 return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
             end
+
+        elseif pos1 == 1 && pos1 == pos2 - 2  #service to service
+            Link_1_1 = Floyd_Warshall[finish_nodes[2], start_nodes[1]]
+            Link_2_1 = Floyd_Warshall[finish_nodes[1], start_nodes[1]]
+            Link_1_2 = Floyd_Warshall[finish_nodes[2], start_nodes[2]]
+            Link_2_2 = Floyd_Warshall[finish_nodes[1], start_nodes[2]]
+
+            Mode_1_1 = Mode_finish[1] + Link_1_1 + Mode_start[1]
+            Mode_2_1 = Mode_finish[2] + Link_2_1 + Mode_start[2]
+            Mode_1_2 = Mode_finish[3] + Link_1_2 + Mode_start[3]
+            Mode_2_2 = Mode_finish[4] + Link_2_2 + Mode_start[4]
+            return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
+
         else
             #subsequence to service
             Link_1_1 = Floyd_Warshall[finish_nodes[2], start_nodes[1]]
@@ -136,7 +149,7 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
     end
 end
 
-function concat_links_know(Modes, σ_data, list_pos_route, sigma_1, sigma_2, links, end_service, origin)
+function concat_links_know(Modes, σ_data, list_pos_route, sigma_1, sigma_2, links, end_service, origin, st_service)
 
     if isempty(Modes)
         if sigma_1[1] == sigma_1[2]
@@ -158,31 +171,48 @@ function concat_links_know(Modes, σ_data, list_pos_route, sigma_1, sigma_2, lin
     end
     
     if sigma_1[1] == sigma_1[2] #Depot
-        if sigma_2[1] == sigma_2[2] #concat depot to service
-            Mode_1_1 = ini[1] + links[1] + final[1]
-            Mode_2_1 = ini[4] + links[2] + final[4]
-            Mode_1_2 = ini[1] + links[3] + final[1]
-            Mode_2_2 = ini[4] + links[4] + final[4]
+        if sigma_2[1] == sigma_1[1] #Empty route
+            Modes = deepcopy([0, 0, 0, 0])
+
+        elseif sigma_2[1] == sigma_2[2] #concat depot to service
+            Mode_1_1 = links[1] + final[1]
+            Mode_2_1 = links[2] + final[4]
+            Mode_1_2 = links[3] + final[1]
+            Mode_2_2 = links[4] + final[4]
             Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])      
               
-        else #concat depot to subsequence (not use)
-            Mode_1_1 = min(ini[1] + links[1] + final[1], ini[1] + links[3] + final[2])
-            Mode_2_1 = min(ini[4] + links[2] + final[1], ini[3] + links[4] + final[2])
-            Mode_1_2 = min(ini[1] + links[1] + final[3], ini[1] + links[3] + final[4])
-            Mode_2_2 = min(ini[4] + links[2] + final[3], ini[4] + links[4] + final[4])
+        else #concat depot to subsequence
+            Mode_1_1 = links[1] + final[1]
+            Mode_2_1 = links[2] + final[2]
+            Mode_1_2 = links[3] + final[3]
+            Mode_2_2 = links[4] + final[4]
             Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])
         end
-
     else
-
         if sigma_2[1] == sigma_1[1] #return to depot
             Mode_1_1 = ini[1] + links[1]
             Mode_2_1 = ini[2] + links[2]
             Mode_1_2 = ini[3] + links[3]
             Mode_2_2 = ini[4] + links[4]
             Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])
-        elseif sigma_2[1] == sigma_2[2] || sigma_2[1] == end_service #concat subsequence to service
 
+        elseif sigma_1[2] == st_service #pos 2 equal a service
+            if sigma_2[1] == sigma_2[2] || sigma_2[1] == end_service #service to service
+                Mode_1_1 = ini[1] + links[1] + final[1]
+                Mode_2_1 = ini[2] + links[2] + final[2]
+                Mode_1_2 = ini[3] + links[3] + final[3]
+                Mode_2_2 = ini[4] + links[4] + final[4]
+                Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])
+
+            else #service to subsequence
+                Mode_1_1 = min(ini[1] + links[1] + final[1], ini[1] + links[3] + final[2])
+                Mode_2_1 = min(ini[4] + links[2] + final[1], ini[4] + links[4] + final[2])
+                Mode_1_2 = min(ini[1] + links[1] + final[3], ini[1] + links[3] + final[4])
+                Mode_2_2 = min(ini[4] + links[2] + final[3], ini[4] + links[4] + final[4])
+                Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])
+            end          
+
+        elseif sigma_2[1] == sigma_2[2] || sigma_2[1] == end_service #concat subsequence to service
             Mode_1_1 = min(ini[1] + links[1] + final[1], ini[3] + links[2] + final[1])
             Mode_2_1 = min(ini[2] + links[1] + final[1], ini[4] + links[2] + final[1])
             Mode_1_2 = min(ini[1] + links[3] + final[4], ini[3] + links[4] + final[4])
@@ -205,13 +235,19 @@ function empty_route(solution, σ_data)
 
     solution_av = deepcopy(solution)
     σ_data_av = deepcopy(σ_data)
+    empty = true
 
-    for pos_route in 1:solution_av.n_routes
-        if solution_av.routes[pos_route].n_edges == 2
-            println("Ok")
-            service = splice!(solution_av.routes, pos_route)
-            sigma = splice!(σ_data_av, pos_route)
+    while empty == true
+        for pos_route in 1:solution_av.n_routes
+            if solution_av.routes[pos_route].n_edges == 2
+                service = splice!(solution_av.routes, pos_route)
+                sigma = splice!(σ_data_av, pos_route)
+                solution_av.n_routes = solution_av.n_routes - 1
+                break
+            end
         end
+        empty = false
     end
+    
     return solution_av, σ_data_av
 end 

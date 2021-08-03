@@ -48,9 +48,9 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
 
         # Change
         if sum(Min_cost) + sum(Min_links) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
-            return true,Links
+            return true, Links
         else
-            return false,Links
+            return false, Links
         end
 
     elseif type == "relocate_intra"
@@ -58,10 +58,19 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
         route = deepcopy(solution.routes[route_pos])
 
         sequence = deepcopy(route.edges)
+
         if pos2 > pos1
-            Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+            if pos1 + 1 == pos2
+                Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos2], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+            else
+                Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+            end   
         else
-            Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[end]]]
+            if pos2 + 1 == pos1
+                Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos2]], [sequence[pos1 + 1], sequence[end]]]
+            else
+                Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[end]]]
+            end
         end
 
         n_Parts = length(Parts)
@@ -155,8 +164,7 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
             else
                 Part_route_2 = [[-1, sequence_2[pos2 - 1].id], [sequence_1[pos1].id, sequence_1[pos1].id], [sequence_2[pos2 + 1].id, 0]]
             end
-        end        
-
+        end
         append!(Min_cost, σ_data[route_pos_1][Part_route_1[1]][5]) #min_cost of modes
         append!(Min_cost, σ_data[route_pos_2][Part_route_1[2]][5]) #min_cost of modes
         append!(Min_cost, σ_data[route_pos_1][Part_route_1[3]][5]) #min_cost of modes
@@ -281,7 +289,7 @@ end
 
 function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, type, links)
 
-    if type=="swap_intra"
+    if type == "swap_intra"
         route = solution.routes[list_route_pos[1]]
 
         Modes = []
@@ -304,15 +312,22 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
         if pos2 + 1 == route.n_edges - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
             end_service = sequence[pos2 + 1]
         end
+
         ini = Parts[1]
         final = Parts[2]
 
-        Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[1], end_service, origin[1:2]))
+        st_service = -2
+        if pos1 - 1 == 1
+            st_service = sequence[pos2] #Start service or first service
+        elseif pos1 - 1 == 2
+            st_service = sequence[pos1 - 1] #Start service or first service
+        end
+
+        Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[1], end_service, origin[1:2], st_service))
         for i in 2:length(Parts) - 1
             ini = [ini[1], final[2]]
             final = Parts[i + 1]
-
-            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1]))
+            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1], st_service))
         end
 
         if minimum(Modes) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
@@ -327,32 +342,66 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
 
         Modes = []
         sequence = deepcopy(route.edges)
+
+        st_service = -2
+
         if pos2 > pos1
-            Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+            if pos1 + 1 == pos2
+                Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos2], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+                if pos1 - 1 == 1
+                    st_service = sequence[pos2] #Start service or first service
+                elseif pos1 - 1 == 2
+                    st_service = sequence[pos1 - 1] #Start service or first service
+                end
+            else
+                Parts = [[sequence[1], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[pos2]], [sequence[pos1], sequence[pos1]], [sequence[pos2 + 1], sequence[end]]]
+                if pos1 - 1 == 2
+                    st_service = sequence[pos1 - 1] #Start service or first service
+                end
+            end   
         else
-            Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[end]]]
+            if pos2 + 1 == pos1
+                Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos2]], [sequence[pos1 + 1], sequence[end]]]
+                if pos2 - 1 == 1
+                    st_service = sequence[pos1] #Start service or first service
+                elseif pos2 - 1 == 2
+                    st_service = sequence[pos2 - 1] #Start service or first service
+                end
+            else
+                Parts = [[sequence[1], sequence[pos2 - 1]], [sequence[pos1], sequence[pos1]], [sequence[pos2], sequence[pos1 - 1]], [sequence[pos1 + 1], sequence[end]]]
+                if pos2 - 1 == 1
+                    st_service = sequence[pos1] #Start service or first service
+                elseif pos2 - 1 == 2
+                    st_service = sequence[pos2 - 1] #Start service or first service
+                end
+            end
         end
+
         origin = [1, 1, 1, 1]
 
-
         end_service = -2 #Impossible
-
-        if pos2 + 1 == route.n_edges - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
-            end_service = sequence[pos2 + 1]
+        if pos2 > pos1
+            if pos2 + 1 == route.n_edges - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
+                end_service = sequence[pos2 + 1]
+            end
+        else
+            if pos1 + 1 == route.n_edges - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
+                end_service = sequence[pos1 + 1]
+            end
         end
 
         ini = Parts[1]
         final = Parts[2]
-        Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[1], end_service, origin[1:2]))
+        Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[1], end_service, origin[1:2], st_service))
         for i in 2:length(Parts) - 1
             ini = [ini[1], final[2]]
             final = Parts[i + 1]
 
-            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1]))
+            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1], st_service))
         end
 
         if minimum(Modes) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
-            #println("Total_cost_concat= ", Modes)
+            #println("Total_cost_concat = ", Modes)
             return true
         else
             return false
@@ -372,30 +421,44 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
 
         Part_routes = [[[sequence_1[1], sequence_1[pos1 - 1]], [sequence_2[pos2], sequence_2[pos2]], [sequence_1[pos1 + 1], sequence_1[end]]], 
                         [[sequence_2[1], sequence_2[pos2 - 1]], [sequence_1[pos1], sequence_1[pos1]], [sequence_2[pos2 + 1], sequence_2[end]]]]
-
+        
         origin=[[1, 2, 1], [2, 1, 2]]
 
         for route in 1:2
             Modes = []
             end_service = -2 #Impossible
+            st_service = -2 #Impossible
             if route == 1
                 if pos1 + 1 == length(route_1.edges) - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
                     end_service = sequence_1[pos1 + 1]
                 end
+
+                if pos1 - 1 == 1
+                    st_service = sequence_2[pos2] #Start service or first service
+                elseif pos1 - 1 == 2
+                    st_service = sequence_1[pos1 - 1] #Start service or first service
+                end
+
             else
                 if pos2 + 1 == length(route_2.edges) - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
                     end_service = sequence_2[pos2 + 1]
+                end
+
+                if pos2 - 1 == 1
+                    st_service = sequence_1[pos1] #Start service or first service
+                elseif pos2 - 1 == 2
+                    st_service = sequence_2[pos2 - 1] #Start service or first service
                 end
             end
 
             ini = Part_routes[route][1]
             final = Part_routes[route][2]
-            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][1], end_service, origin[route][1:2]))
+            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][1], end_service, origin[route][1:2], st_service))
 
             for i in 2:length(Part_routes[route]) - 1
                 ini = [ini[1], final[2]]
                 final = Part_routes[route][i + 1]   
-                Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][i], end_service, origin[route][i:i + 1]))
+                Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][i], end_service, origin[route][i:i + 1], st_service))
             end
             append!(Modes_routes, [Modes])
         end
@@ -424,6 +487,8 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
         sequence_1 = deepcopy(route_1.edges)
         sequence_2 = deepcopy(route_2.edges)
 
+        st_service = [sequence_1[2], sequence_2[2]] #Start service or first service
+
         Part_routes = [[[sequence_1[1], sequence_1[pos1 - 1]], [sequence_1[pos1 + 1], sequence_1[end]]], 
                         [[sequence_2[1], sequence_2[pos2 - 1]], [sequence_1[pos1], sequence_1[pos1]], [sequence_2[pos2], sequence_2[end]]]]
 
@@ -432,24 +497,35 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
         for route in 1:2
             Modes = []
             end_service = -2 #Impossible
+            st_service = -2
             if route == 1
                 if pos1 + 1 == length(route_1.edges) - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
                     end_service = sequence_1[pos1 + 1]
+                end
+
+                if pos1 - 1 == 2
+                    st_service = sequence_1[pos1 - 1] #Start service or first service
                 end
             else
                 if pos2 == length(route_2.edges) - 1 #if the subsequence begins in the ultimate service until the deposit. This subsequence is considered as a single service
                     end_service = sequence_2[pos2]
                 end
+
+                if pos2 - 1 == 1
+                    st_service = sequence_1[pos1] #Start service or first service
+                elseif pos2 - 1 == 2
+                    st_service = sequence_2[pos2 - 1] #Start service or first service
+                end
             end
 
             ini = Part_routes[route][1]
             final = Part_routes[route][2]
-            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][1], end_service, origin[route][1:2]))
+            Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][1], end_service, origin[route][1:2], st_service))
 
             for i in 2:length(Part_routes[route]) - 1
                 ini = [ini[1], final[2]]
                 final = Part_routes[route][i + 1]   
-                Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][i], end_service, origin[route][i:i + 1]))
+                Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[route][i], end_service, origin[route][i:i + 1], st_service))
             end
             append!(Modes_routes, [Modes])
         end
