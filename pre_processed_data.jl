@@ -86,14 +86,22 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
         end
 
         if start == depot #return to the deposit
+            
             Link_1_D = Floyd_Warshall[finish_nodes[2], start_nodes[1]]
             Link_2_D = Floyd_Warshall[finish_nodes[1], start_nodes[2]]
-            
-            Mode_1_1 = Mode_finish[1] + Link_1_D
-            Mode_2_1 = Mode_finish[2] + Link_1_D
-            Mode_1_2 = Mode_finish[3] + Link_2_D
-            Mode_2_2 = Mode_finish[4] + Link_2_D
-            return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
+            if pos2 == 3
+                Mode_1_1 = Mode_finish[1] + Link_1_D
+                Mode_2_1 = Mode_finish[2] + Link_2_D
+                Mode_1_2 = Mode_finish[3] + Link_1_D
+                Mode_2_2 = Mode_finish[4] + Link_2_D
+                return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
+            else
+                Mode_1_1 = Mode_finish[1] + Link_1_D
+                Mode_2_1 = Mode_finish[2] + Link_1_D
+                Mode_1_2 = Mode_finish[3] + Link_2_D
+                Mode_2_2 = Mode_finish[4] + Link_2_D
+                return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
+            end
 
         elseif finish_1 == route.edges[pos1] 
 
@@ -240,6 +248,7 @@ function empty_route(solution, σ_data)
     while empty == true
         for pos_route in 1:solution_av.n_routes
             if solution_av.routes[pos_route].n_edges == 2
+                println("OK")
                 service = splice!(solution_av.routes, pos_route)
                 sigma = splice!(σ_data_av, pos_route)
                 solution_av.n_routes = solution_av.n_routes - 1

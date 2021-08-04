@@ -21,7 +21,7 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
         n_Parts = length(Parts)
 
         for i in 1:n_Parts - 1
-            Link, min_link = get_links(Parts[i], Parts[i + 1], Floyd_Warshall, sequence[1])
+            Link, min_link = get_links(Parts[i], Parts[i + 1], Floyd_Warshall, sequence[1], route.n_edges)
             append!(Links, [Link])
             append!(Min_links, min_link)
         end
@@ -31,23 +31,23 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
             final = Parts[i][2]
             if i == 1
                 if ini == final
-                    append!(Min_cost, σ_data[route.id][[-1, -1]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[-1, -1]][5]) #min_cost of modes
                 else
-                    append!(Min_cost, σ_data[route.id][[-1, final.id]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[-1, final.id]][5]) #min_cost of modes
                 end
             elseif i == n_Parts
                 if ini == final
-                    append!(Min_cost, σ_data[route.id][[0, 0]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[0, 0]][5]) #min_cost of modes
                 else
-                    append!(Min_cost, σ_data[route.id][[ini.id, 0]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[ini.id, 0]][5]) #min_cost of modes
                 end
             else
-                append!(Min_cost, σ_data[route.id][[ini.id, final.id]][5])
+                append!(Min_cost, σ_data[route_pos][[ini.id, final.id]][5])
             end
         end 
 
         # Change
-        if sum(Min_cost) + sum(Min_links) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
+        if sum(Min_cost) + sum(Min_links) - minimum(σ_data[route_pos][[-1, 0]][5]) < 0
             return true, Links
         else
             return false, Links
@@ -76,7 +76,7 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
         n_Parts = length(Parts)
 
         for i in 1:n_Parts - 1
-            Link, min_link = get_links(Parts[i], Parts[i + 1], Floyd_Warshall, sequence[1])
+            Link, min_link = get_links(Parts[i], Parts[i + 1], Floyd_Warshall, sequence[1], route.n_edges)
             append!(Links, [Link])
             append!(Min_links, min_link)
         end
@@ -86,23 +86,23 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
             final = Parts[i][2]
             if i == 1
                 if ini == final
-                    append!(Min_cost, σ_data[route.id][[-1, -1]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[-1, -1]][5]) #min_cost of modes
                 else
-                    append!(Min_cost, σ_data[route.id][[-1, final.id]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[-1, final.id]][5]) #min_cost of modes
                 end
             elseif i == n_Parts
                 if ini == final
-                    append!(Min_cost, σ_data[route.id][[0, 0]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[0, 0]][5]) #min_cost of modes
                 else
-                    append!(Min_cost, σ_data[route.id][[ini.id, 0]][5]) #min_cost of modes
+                    append!(Min_cost, σ_data[route_pos][[ini.id, 0]][5]) #min_cost of modes
                 end
             else
-                append!(Min_cost, σ_data[route.id][[ini.id, final.id]][5])
+                append!(Min_cost, σ_data[route_pos][[ini.id, final.id]][5])
             end
         end 
 
         # Change
-        if sum(Min_cost) + sum(Min_links) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
+        if sum(Min_cost) + sum(Min_links) - minimum(σ_data[route_pos][[-1, 0]][5]) < 0
             return true,Links
         else
             return false,Links
@@ -125,12 +125,12 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
         route_2_links = []
 
         for i in 1:length(Part_route_1) - 1
-            Link, min_link = get_links(Part_route_1[i], Part_route_1[i + 1], Floyd_Warshall, sequence_1[1])
+            Link, min_link = get_links(Part_route_1[i], Part_route_1[i + 1], Floyd_Warshall, sequence_1[1], route_1.n_edges)
             append!(route_1_links, [Link])
             append!(Min_links, min_link)
         end
         for i in 1:length(Part_route_2) - 1
-            Link, min_link = get_links(Part_route_2[i], Part_route_2[i + 1], Floyd_Warshall, sequence_2[1])
+            Link, min_link = get_links(Part_route_2[i], Part_route_2[i + 1], Floyd_Warshall, sequence_2[1], route_2.n_edges)
             append!(route_2_links, [Link])
             append!(Min_links, min_link)
         end
@@ -195,12 +195,12 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
         route_2_links = []
 
         for i in 1:length(Part_route_1) - 1
-            Link, min_link = get_links(Part_route_1[i], Part_route_1[i + 1], Floyd_Warshall, sequence_1[1])
+            Link, min_link = get_links(Part_route_1[i], Part_route_1[i + 1], Floyd_Warshall, sequence_1[1], route_1.n_edges - 1)
             append!(route_1_links, [Link])
             append!(Min_links, min_link)
         end
         for i in 1:length(Part_route_2) - 1
-            Link, min_link = get_links(Part_route_2[i], Part_route_2[i + 1], Floyd_Warshall, sequence_2[1])
+            Link, min_link = get_links(Part_route_2[i], Part_route_2[i + 1], Floyd_Warshall, sequence_2[1], route_2.n_edges + 1)
             append!(route_2_links, [Link])
             append!(Min_links, min_link)
         end
@@ -252,7 +252,7 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
     end 
 end
 
-function get_links(Part1, Part2, Floyd_Warshall, depot)
+function get_links(Part1, Part2, Floyd_Warshall, depot, n_edges)
 
     if Part1[2] == depot
         if Part2[1] == depot #empty route
@@ -272,8 +272,11 @@ function get_links(Part1, Part2, Floyd_Warshall, depot)
         Link_1_D=Floyd_Warshall[edge_end[2], depot.id]
         Link_2_D=Floyd_Warshall[edge_end[1], depot.id]
 
-        return [Link_1_D, Link_1_D, Link_2_D, Link_2_D], min(Link_1_D, Link_2_D)
-    
+        if n_edges == 3
+            return [Link_1_D, Link_2_D, Link_1_D, Link_2_D], min(Link_1_D, Link_2_D)
+        else
+            return [Link_1_D, Link_1_D, Link_2_D, Link_2_D], min(Link_1_D, Link_2_D)
+        end
     else
         edge_end = [Part1[2].from.id, Part1[2].to.id]
         edge_ini = [Part2[1].from.id, Part2[1].to.id]
@@ -330,7 +333,7 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
             Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1], st_service))
         end
 
-        if minimum(Modes) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
+        if minimum(Modes) - minimum(σ_data[list_route_pos[1]][[-1, 0]][5]) < 0
             #println("Total_cost_concat= ", Modes)
             return true
         else
@@ -400,7 +403,7 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
             Modes = deepcopy(concat_links_know(Modes, σ_data, list_route_pos, ini, final, links[i], end_service, origin[i:i + 1], st_service))
         end
 
-        if minimum(Modes) - minimum(σ_data[route.id][[-1, 0]][5]) < 0
+        if minimum(Modes) - minimum(σ_data[list_route_pos[1]][[-1, 0]][5]) < 0
             #println("Total_cost_concat = ", Modes)
             return true
         else
