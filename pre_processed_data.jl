@@ -89,7 +89,7 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
             
             Link_1_D = Floyd_Warshall[finish_nodes[2], start_nodes[1]]
             Link_2_D = Floyd_Warshall[finish_nodes[1], start_nodes[2]]
-            if pos2 == 3
+            if pos2 == 3 && pos1 == 1 # if length route is 3
                 Mode_1_1 = Mode_finish[1] + Link_1_D
                 Mode_2_1 = Mode_finish[2] + Link_2_D
                 Mode_1_2 = Mode_finish[3] + Link_1_D
@@ -103,7 +103,7 @@ function concat_FORW(dict_ROUTE, route, pos1, pos2, Floyd_Warshall) #concatenati
                 return [Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2, min(Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2)]
             end
 
-        elseif finish_1 == route.edges[pos1] 
+        elseif finish_1 == finish_0 
 
             if finish_1 == depot #depot to service
                 Link_D_1 = Floyd_Warshall[finish_nodes[1], start_nodes[1]]
@@ -181,6 +181,13 @@ function concat_links_know(Modes, σ_data, list_pos_route, sigma_1, sigma_2, lin
     if sigma_1[1] == sigma_1[2] #Depot
         if sigma_2[1] == sigma_1[1] #Empty route
             Modes = deepcopy([0, 0, 0, 0])
+
+        elseif sigma_2[1] == end_service #service to service
+            Mode_1_1 = links[1] + final[1]
+            Mode_2_1 = links[2] + final[2]
+            Mode_1_2 = links[3] + final[3]
+            Mode_2_2 = links[4] + final[4]
+            Modes = deepcopy([Mode_1_1, Mode_2_1, Mode_1_2, Mode_2_2])
 
         elseif sigma_2[1] == sigma_2[2] #concat depot to service
             Mode_1_1 = links[1] + final[1]

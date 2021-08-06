@@ -12,7 +12,7 @@ include("lower_bound.jl")
 include("perturbation.jl")
 #push!(LOAD_PATH, ".")
 
-ARGS = [:kshs5, "2", "611141361"]
+ARGS = [:gdb2, "2", "534242063"]
 
 #---------------------DATA AND INFORMATION---------------------#
 
@@ -67,7 +67,7 @@ println("Total Cost = ", start_solution.total_cost)
 
 opt_solution = deepcopy(start_solution) #Struct mutable
 solution = deepcopy(start_solution) #Struct mutable
-
+solution
 
 #-------------------PERTURBATION PARAMETERS --------------------#
 
@@ -79,7 +79,7 @@ reduc = 0.0005
 
 #------------------------LOCAL SEARCH---------------------------#
 
-while a < 500 #(time() - startt) < 60
+while a < 100 #(time() - startt) < 60
     global a = a + 1
     accept_move = true
     
@@ -129,14 +129,14 @@ while a < 500 #(time() - startt) < 60
     end
 
     solution.total_cost = Total_Cost(solution, σ_data)
-    #println(a, ". Total Cost = ", solution.total_cost)
+    println(a, ". Total Cost = ", solution.total_cost)
 
     if solution.total_cost < opt_solution.total_cost - 0.000001 || solution.n_routes < opt_solution.n_routes #Less vehicles
         global opt_solution = deepcopy(solution)
         global σ_data_opt = deepcopy(σ_data)
         global Max = copy(MAX_VALUE)
         global Min = copy(MIN_VALUE)
-        println(a)
+        #println(a)
     end
 
  
@@ -199,4 +199,4 @@ opt_solution.routes
 
 #------------------------------------------------------------------#
 #a = preprocessing_total_data(opt_solution, Floyd_Warshall) #Dict
-#Total_Cost(opt_solution ,a)
+#Total_Cost(opt_solution ,a) 

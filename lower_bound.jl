@@ -188,8 +188,11 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
 
         sequence_1 = deepcopy(route_1.edges)
         sequence_2 = deepcopy(route_2.edges)
-
-        Part_route_1 = [[sequence_1[1], sequence_1[pos1 - 1]], [sequence_1[pos1 + 1], sequence_1[end]]]
+        if route_1.n_edges - 1 == 3 && pos1 - 1 == 1 #after concat, we have 1 service
+            Part_route_1 = [[sequence_1[1], sequence_1[1]], [sequence_1[pos1 + 1], sequence_1[pos1 + 1]], [sequence_1[end], sequence_1[end]]] # Depot + Service + Depot
+        else
+            Part_route_1 = [[sequence_1[1], sequence_1[pos1 - 1]], [sequence_1[pos1 + 1], sequence_1[end]]]
+        end
         Part_route_2 = [[sequence_2[1], sequence_2[pos2 - 1]], [sequence_1[pos1], sequence_1[pos1]], [sequence_2[pos2], sequence_2[end]]]
         route_1_links = []
         route_2_links = []
@@ -253,7 +256,7 @@ function lower_bound(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, po
 end
 
 function get_links(Part1, Part2, Floyd_Warshall, depot, n_edges)
-
+    
     if Part1[2] == depot
         if Part2[1] == depot #empty route
             return [0, 0, 0, 0], 0
@@ -492,10 +495,18 @@ function after(σ_data, solution, list_route_pos, Floyd_Warshall, pos1, pos2, ty
 
         st_service = [sequence_1[2], sequence_2[2]] #Start service or first service
 
-        Part_routes = [[[sequence_1[1], sequence_1[pos1 - 1]], [sequence_1[pos1 + 1], sequence_1[end]]], 
-                        [[sequence_2[1], sequence_2[pos2 - 1]], [sequence_1[pos1], sequence_1[pos1]], [sequence_2[pos2], sequence_2[end]]]]
+        if route_1.n_edges - 1 == 3 && pos1 - 1 == 1 #after concat, we have 1 service
+            Part_route_1 = [[sequence_1[1], sequence_1[1]], [sequence_1[pos1 + 1], sequence_1[pos1 + 1]], [sequence_1[end], sequence_1[end]]] # Depot + Service + Depot
+            origin=[[1, 1, 1], [2, 1, 2]]
+        else
+            Part_route_1 = [[sequence_1[1], sequence_1[pos1 - 1]], [sequence_1[pos1 + 1], sequence_1[end]]]
+            origin=[[1, 1], [2, 1, 2]]
+        end
+        Part_route_2 = [[sequence_2[1], sequence_2[pos2 - 1]], [sequence_1[pos1], sequence_1[pos1]], [sequence_2[pos2], sequence_2[end]]]
+        
+        Part_routes = [Part_route_1, Part_route_2]
 
-        origin=[[1, 1], [2, 1, 2]]
+        
 
         for route in 1:2
             Modes = []
