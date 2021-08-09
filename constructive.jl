@@ -7,7 +7,7 @@ function constructive(Floyd_Warshall, data, depot)
     D_ROUTES = []
     for c in clients_order
         if  isempty(ROUTES)
-            append!(ROUTES, [[depot, c]])
+            append!(ROUTES, [[c.id]])
             append!(D_ROUTES, c.demand)
         else
             pos = 0
@@ -20,17 +20,13 @@ function constructive(Floyd_Warshall, data, depot)
                 end
             end
             if pos == 0
-                append!(ROUTES, [[depot, c]])
+                append!(ROUTES, [[c.id]])
                 append!(D_ROUTES, c.demand)
             else                
-                append!(ROUTES[pos], [c])
+                append!(ROUTES[pos], [c.id])
                 D_ROUTES[pos] = demand
             end
         end
-    end
-
-    for route_pos in 1:length(ROUTES)
-        append!(ROUTES[route_pos], [depot])
     end
 
     start_solution = new_solution(ROUTES, D_ROUTES)
