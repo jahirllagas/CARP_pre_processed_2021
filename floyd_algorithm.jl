@@ -9,8 +9,8 @@ end
 function Total_Cost(solution ,σ_data)
     TOTAL_COST = 0
     for i in 1:solution.n_routes
-        cost_modes = concat_depot(data, solution.routes[i], i, σ_data)
-        TOTAL_COST = TOTAL_COST + cost_modes[5]
+        cost_modes = FORW_D_Subsequence_D(data, solution.routes[i], i, σ_data)
+        TOTAL_COST = TOTAL_COST + minimum(cost_modes)
     end
     return TOTAL_COST
 end 
