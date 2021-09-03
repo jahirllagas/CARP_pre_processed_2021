@@ -1,6 +1,5 @@
 using LightGraphs
 using CARPData
-using Random, Statistics
 using SimpleWeightedGraphs
 
 include("carpInstance.jl")
@@ -12,7 +11,7 @@ include("lower_bound.jl")
 include("perturbation.jl")
 push!(LOAD_PATH, ".")
 
-#ARGS = ["gdb1", "184874777", "4", "0.005", "0.1", "1.txt"]
+ARGS = ["kshs1", "42", "4", "0.005", "0.1", "kshs1-out.txt"]
 
 #---------------------DATA AND INFORMATION---------------------#
 instance = ARGS[1]
