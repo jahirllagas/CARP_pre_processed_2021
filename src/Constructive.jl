@@ -1,8 +1,10 @@
 using Random
 
 include("Solution.jl")
+include("Sigma.jl")
+include("Preprocessed.jl")
 
-function runConstructive(data::Data)
+function runConstructive(data::Data, sp_matrix::Matrix{Int64})
 
     requireds = shuffle(data.requireds)
     routes = Vector{Vector{Int64}}()
@@ -31,7 +33,19 @@ function runConstructive(data::Data)
             end
         end
     end
+    routes = vcat.([ 0 ], routes, [ 0 ])
 
-    solution = Solution(routes, total_demands)
-    return solution
+    σ_data = Vector{Matrix{σ}}()
+    cost_routes = Vector{Float64}()
+    total_cost = 0
+    
+    for r in 1:length(routes)
+        push!(σ_data, update(data, routes[r], sp_matrix))
+        cost_route = minimum(σ_data[r][2, end - 1].modes + costDepot(data, sp_matrix, 2, length(routes[r]) - 1))
+        push!(cost_routes, cost_route)
+        total_cost += cost_route
+    end
+
+    solution = Solution(cost_routes, total_cost, routes, total_demands)
+    return solution, σ_data
 end
