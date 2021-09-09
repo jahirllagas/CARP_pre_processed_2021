@@ -144,8 +144,39 @@ function searchEmptyDemand(new_demand::Vector{Int64})
     return accept
 end
 
-function perturbRelocateInter()
-    # Perturb the solution
+function perturbRelocateInter(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos1::Int64, rq1::Int64, moved::Int64)
+    route_1 = deepcopy(solution.routes[route_pos1])
+    routes = shuffle(1:length(solution.routes))
+    if rq1 != length(route_1.edges)
+        for route_pos2 in routes
+            if route_pos1 != route_pos2
+                route_2 = deepcopy(solution.routes[route_pos2])
+                requireds = shuffle(2:length(route_2.edges))
+                for rq2 in requireds
+                    if rq1 != rq2
+                        empty_route = false
+                        routes = [route_1, route_2]
+                        routes_pos = [route_pos1, route_pos2]
+                        accept_demand, new_demand = demandRelocateInter(data, solution, routes_pos, rq1, data.capacity)
+                        empty_route = searchEmptyDemand(new_demand)
+
+                        if empty_route
+                            new_solution, σ_data = moveRelocateInter(data, σ_data, sp_matrix, solution, routes_pos, new_demand, rq1, rq2, empty_route)
+                            moved += 1
+                            return moved, new_solution, σ_data
+                        end
+
+                        if accept_demand
+                            new_solution, σ_data = moveRelocateInter(data, σ_data, sp_matrix, solution, routes_pos, new_demand, rq1, rq2, empty_route)
+                            moved += 1
+                            return moved, new_solution, σ_data
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return moved, solution, σ_data
 end
 
 function localSearchRelocateInter(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos1::Int64, rq1::Int64)

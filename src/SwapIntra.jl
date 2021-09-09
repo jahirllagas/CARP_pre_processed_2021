@@ -95,8 +95,20 @@ function moveSwapIntra(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matri
     return solution, σ_data
 end
 
-function perturbSwapIntra()
-    # Perturb the solution
+function perturbSwapIntra(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos::Int64, rq1::Int64, moved::Int64)
+    route = deepcopy(solution.routes[route_pos])
+    requireds = shuffle(2:length(route.edges) - 1)
+
+    if rq1 != length(route.edges)
+        for rq2 in requireds
+            if rq1 != rq2
+                new_solution, σ_data = moveSwapIntra(data, σ_data, sp_matrix, solution, route_pos, rq1, rq2)
+                moved += 1
+                return moved, new_solution, σ_data
+            end
+        end
+    end
+    return moved, solution, σ_data
 end
 
 function localSearchSwapIntra(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos::Int64, rq1::Int64)

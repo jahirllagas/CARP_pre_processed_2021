@@ -128,8 +128,30 @@ function demandSwapInter(data::Data, solution::Solution, routes_pos::Vector{Int6
     end
 end
 
-function perturbSwapInter()
-    # Perturb the solution
+function perturbSwapInter(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos1::Int64, rq1::Int64, moved::Int64)
+    route_1 = deepcopy(solution.routes[route_pos1])
+    routes = shuffle(1:length(solution.routes))
+    if rq1 != length(route_1.edges)
+        for route_pos2 in routes
+            if route_pos1 != route_pos2
+                route_2 = deepcopy(solution.routes[route_pos2])
+                requireds = shuffle(2:length(route_2.edges) - 1)
+                for rq2 in requireds
+                    if rq1 != rq2
+                        routes = [route_1, route_2]
+                        routes_pos = [route_pos1, route_pos2]
+                        accept_demand, new_demand = demandSwapInter(data, solution, routes_pos, rq1, rq2, data.capacity)
+                        if accept_demand
+                            new_solution, σ_data = moveSwapInter(data, σ_data, sp_matrix, solution, routes_pos, new_demand, rq1, rq2)
+                            moved += 1
+                            return moved, new_solution, σ_data
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return moved, solution, σ_data
 end
 
 function localSearchSwapInter(data::Data, σ_data::Vector{Matrix{σ}}, sp_matrix::Matrix{Int64}, solution::Solution, route_pos1::Int64, rq1::Int64)
